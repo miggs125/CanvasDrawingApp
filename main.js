@@ -34,6 +34,10 @@ const tools = {
     ctx.lineWidth = tools.lineWidth;
     ctx.strokeStyle = '#fff'
     ctx.lineCap = 'round';
+
+    ctx.lineTo(e.clientX, e.clientY);
+    ctx.stroke();
+    ctx.moveTo(e.clientX, e.clientY);
   }
 };
 
@@ -72,6 +76,7 @@ window.onload = () => {
 
   const squareButton = document.querySelector('#square');
   const drawButton = document.querySelector('#draw');
+  const eraserButton = document.querySelector('#eraser');
 
   let eventFunc = tools.drawRectangle;
   let eventFuncName = 'rectangle';
@@ -134,7 +139,8 @@ window.onload = () => {
       case 'rectangle':
         return contextTemp;
       case 'draw':
-        return context
+      case 'eraser':
+        return context;
     }
   }
 
@@ -181,5 +187,10 @@ window.onload = () => {
   drawButton.addEventListener('click', () => {
     eventFunc = tools.freeDraw;
     eventFuncName = 'draw';
+  });
+
+  eraserButton.addEventListener('click', () => {
+    eventFunc = tools.erase;
+    eventFuncName = 'eraser';
   });
 };
