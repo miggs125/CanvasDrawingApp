@@ -35,6 +35,8 @@ window.onload = () => {
   const ellipseButton = document.querySelector('#ellipse');
   const lineWidthButton = document.querySelector('#lineWidth');
   const colourButton = document.querySelector('#lineColour');
+  const fillColour = document.querySelector('#fillColour');
+  const fillButton = document.querySelector('#fill');
 
   let eventFunc;
   let eventFuncName;
@@ -43,54 +45,65 @@ window.onload = () => {
   ---------- FUNCTIONS ----------------
   -------------------------------------
   */
+
+  const fitToParent = (element) => {
+    element.style.width = '100%';
+    element.style.height = '100%';
+
+    element.width = element.offsetWidth;
+    element.height = element.offsetHeight;
+  };
+
   const tools = {
     lineStyle: 10,
     lineColour: 'black',
     fill: false,
     lineWidth: 2,
+    fillColour: '#fff',
     lineCap: 'round',
-    drawRectangle: (e, render, ctx, startCoordinates) => {
-      const width = e.clientX - startCoordinates.x;
-      const height = e.clientY - startCoordinates.y;
+    drawRectangle: (render, ctx, startCoordinates) => {
+      const width = currentPosition.x - startCoordinates.x;
+      const height = currentPosition.y - startCoordinates.y;
       tools.setStyle(ctx);
 
       ctx.beginPath();
       if (render) tools.clearRendered(ctx);
-      ctx.strokeRect(startCoordinates.x, startCoordinates.y, width, height);
+      ctx.rect(startCoordinates.x, startCoordinates.y, width, height);
+      if (tools.fill) ctx.fill();
       ctx.stroke();
       ctx.closePath();
     },
 
-    freeDraw: (e, render, ctx) => {
+    freeDraw: (render, ctx) => {
       if (!render) return;
 
       tools.setStyle(ctx);
 
-      ctx.lineTo(e.clientX, e.clientY);
+      ctx.lineTo(currentPosition.x, currentPosition.y);
       ctx.stroke();
     },
-    erase: (e, render, ctx) => {
+    erase: (render, ctx) => {
       if (!render) return;
 
       ctx.lineWidth = tools.lineWidth;
-      ctx.strokeStyle = '#fff';
-      ctx.lineCap = 'round';
-
-      ctx.lineTo(e.clientX, e.clientY);
+      ctx.strokeStyle = tools.fillColour;
+      ctx.lineCap = 'butt';
+      ctx.lineTo(currentPosition.x, currentPosition.y);
       ctx.stroke();
-      ctx.moveTo(e.clientX, e.clientY);
+      ctx.moveTo(currentPosition.x, currentPosition.y);
       tools.setStyle(ctx);
     },
 
-    ellipse: (e, render, ctx, startCoordinates) => {
+    ellipse: (render, ctx, startCoordinates) => {
       const { x, y } = startCoordinates;
-      const radiusX = Math.abs(e.clientX - startCoordinates.x);
-      const radiusY = Math.abs(e.clientY - startCoordinates.y);
+      const radiusX = Math.abs(currentPosition.x - x);
+      const radiusY = Math.abs(currentPosition.y - y);
       tools.setStyle(ctx);
 
       ctx.beginPath();
       if (render) tools.clearRendered(ctx);
       ctx.ellipse(x, y, radiusX, radiusY, 0, 0, 2 * Math.PI);
+      if (tools.fill) ctx.fill();
       ctx.stroke();
       ctx.closePath();
     },
@@ -103,38 +116,35 @@ window.onload = () => {
       ctx.lineCap = tools.lineCap;
       ctx.strokeStyle = tools.lineColour;
       ctx.lineWidth = tools.lineWidth;
+      ctx.fillStyle = tools.fillColour;
     }
   };
 
   const setCurrentPosition = ({ clientX, clientY }) => {
-    currentPosition.x = clientX;
-    currentPosition.y = clientY;
+    currentPosition.x = clientX - canvas.getBoundingClientRect().x;
+    currentPosition.y = clientY - canvas.getBoundingClientRect().y;
   };
 
   const renderEvent = (e, c) => {
     if (!painting) return;
     setCurrentPosition(e);
-    eventFunc(e, painting, c, startCoordinates);
+    eventFunc(painting, c, startCoordinates);
   };
 
   const paintPermanent = (e) => {
     setCurrentPosition(e);
-    eventFunc(e, painting, context, startCoordinates);
+    eventFunc(painting, context, startCoordinates);
   };
 
   //------ EVENT HANDLER FUNCTIONS------------
   const mouseDown = (e) => {
-    console.log(tools.lineWidth, typeof tools.lineWidth);
     getContext().beginPath();
     painting = true;
-    startCoordinates.x = e.clientX;
-    startCoordinates.y = e.clientY;
-
+    startCoordinates.x = e.clientX - canvas.getBoundingClientRect().x;
+    startCoordinates.y = e.clientY - canvas.getBoundingClientRect().y;
     if (eventFuncName !== 'draw' && eventFuncName !== 'eraser') {
-      canvas.setAttribute('class', 'hide');
       tempCanvas.setAttribute('class', 'display');
     }
-    console.log(getContext());
 
     renderEvent(e, getContext());
   };
@@ -169,14 +179,11 @@ window.onload = () => {
   -------------------------------------
   */
 
+  fitToParent(canvas);
+  fitToParent(tempCanvas);
+
   eventFunc = tools.drawRectangle;
   eventFuncName = 'rectangle';
-
-  canvas.height = window.innerHeight * 0.85;
-  canvas.width = window.innerWidth * 0.85;
-
-  tempCanvas.height = window.innerHeight * 0.85;
-  tempCanvas.width = window.innerWidth * 0.85;
 
   canvas.setAttribute('class', 'display');
   tempCanvas.setAttribute('class', 'hide');
@@ -188,11 +195,8 @@ window.onload = () => {
   */
 
   window.addEventListener('resize', () => {
-    canvas.height = document.querySelector('#App').style.height * 0.6;
-    canvas.width = document.querySelector('#App').style.width * 0.6;
-
-    tempCanvas.height = window.innerHeight * 0.5;
-    tempCanvas.width = window.innerWidth * 0.5;
+    fitToParent(canvas);
+    fitToParent(tempCanvas);
   });
 
   tempCanvas.addEventListener('mousedown', mouseDown);
@@ -215,6 +219,18 @@ window.onload = () => {
 
   colourButton.addEventListener('input', () => {
     tools.lineColour = colourButton.value;
+  });
+
+  fillColour.addEventListener('input', () => {
+    tools.fillColour = fillColour.value;
+  });
+
+  fillButton.addEventListener('input', () => {
+    if (fillButton.checked === true) {
+      tools.fill = true;
+    } else {
+      tools.fill = false;
+    }
   });
 
   ellipseButton.addEventListener('click', () => {
