@@ -51,7 +51,8 @@ header {
     width: 97vw;
     background:rgba(90, 142, 238, 0.363);
     padding: 1rem;
-    border: solid rgb(25, 50, 97);;
+    border: solid rgb(25, 50, 97);
+    min-height: 500px;
 }
 
 .icon {
