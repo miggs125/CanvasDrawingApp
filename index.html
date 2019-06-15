@@ -1,20 +1,44 @@
 <!DOCTYPE html>
 <html>
-<head>
-    <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <title>canvas</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="stylesheet" type="text/css" media="screen" href="main.css">
-</head>
-<body>
-    <canvas id="canvas">      
-    </canvas>
-    <canvas id="tempCanvas">  
-    </canvas>
-    <script  type="module" src="main.js"></script>
-    <button id="square">SQUARE</button>
-    <button id="draw">DRAW</button>
-    <button id="eraser">ERASE</button>
-</body>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="stylesheet" type="text/css" media="screen" href="main.css" />
+  </head>
+  <body>
+    <div id="App">
+      <canvas  id="canvas"> </canvas>
+      <canvas  id="tempCanvas"> </canvas>
+      <script type="module" src="main.js"></script>
+
+      <div class="functions">
+        <button id="square">SQUARE</button>
+        <button id="draw">DRAW</button>
+        <button id="eraser">ERASE</button>
+        <button id="ellipse">ELLIPSE</button>
+      </div>
+
+      <div class="settings">
+        <form action="" id="settings">
+          <select name="lineWidth" id="lineWidth">
+            <option value="1">1</option>
+            <option value="2">2</option>
+            <option value="3">3</option>
+            <option value="4">4</option>
+            <option value="5">5</option>
+            <option value="6">6</option>
+            <option value="7">7</option>
+            <option value="8">8</option>
+            <option value="9">9</option>
+            <option value="10">10</option>
+          </select>
+
+          <input id="color" type="color" name="" id="" />
+          <input id="fill" type="checkbox" />
+        </form>
+      </div>
+    </div>
+  </body>
 </html>

@@ -1,47 +1,3 @@
-const tools = {
-  lineWidth: 3,
-  drawRectangle: (e, render, ctx, startCoordinates) => {
-    const width = e.clientX - startCoordinates.x;
-    const height = e.clientY - startCoordinates.y;
-    ctx.lineWidth = tools.lineWidth;
-    ctx.lineCap = 'round';
-
-    if (!render) {
-      ctx.rect(startCoordinates.x, startCoordinates.y, width, height);
-      ctx.stroke();
-      return;
-    }
-
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    ctx.stroke();
-    ctx.strokeRect(startCoordinates.x, startCoordinates.y, width, height);
-    ctx.stroke();
-  },
-
-  freeDraw: (e, render, ctx) => {
-    if (!render) return;
-
-    ctx.lineWidth = tools.lineWidth;
-    ctx.lineCap = 'round';
-
-    ctx.lineTo(e.clientX, e.clientY);
-    ctx.stroke();
-    ctx.moveTo(e.clientX, e.clientY);
-  },
-  erase: (e, render, ctx) => {
-    if(!render) return;
-
-    ctx.lineWidth = tools.lineWidth;
-    ctx.strokeStyle = '#fff'
-    ctx.lineCap = 'round';
-
-    ctx.lineTo(e.clientX, e.clientY);
-    ctx.stroke();
-    ctx.moveTo(e.clientX, e.clientY);
-  }
-};
-
-
 window.onload = () => {
   /*
   -------------------------------------
@@ -64,7 +20,6 @@ window.onload = () => {
   /** @type {HTMLCanvasElement} */
   const canvas = document.querySelector('#canvas');
 
-  
   /** @type {HTMLCanvasElement} */
   const tempCanvas = document.querySelector('#tempCanvas');
 
@@ -77,30 +32,74 @@ window.onload = () => {
   const squareButton = document.querySelector('#square');
   const drawButton = document.querySelector('#draw');
   const eraserButton = document.querySelector('#eraser');
+  const ellipseButton = document.querySelector('#ellipse');
 
-  let eventFunc = tools.drawRectangle;
-  let eventFuncName = 'rectangle';
-
-  /*
-  -------------------------------------
-  --------- INITIALIZERS --------------
-  -------------------------------------
-  */
-
- canvas.height = window.innerHeight *.85;
- canvas.width = window.innerWidth * .85;
-
- tempCanvas.height = window.innerHeight *.85;
- tempCanvas.width = window.innerWidth * .85;
-
-  canvas.setAttribute('class', 'display');
-  tempCanvas.setAttribute('class', 'hide');
-
+  let eventFunc;
+  let eventFuncName;
   /*
   -------------------------------------
   ---------- FUNCTIONS ----------------
   -------------------------------------
   */
+  const tools = {
+    lineStyle: 10,
+    LineColour: 1,
+    fill: 1,
+    lineWidth: 14,
+    drawRectangle: (e, render, ctx, startCoordinates) => {
+      const width = e.clientX - startCoordinates.x;
+      const height = e.clientY - startCoordinates.y;
+      ctx.lineWidth = tools.lineWidth;
+      ctx.lineCap = 'round';
+
+      ctx.beginPath();
+      if (render) tools.clearRendered(ctx);
+      ctx.strokeRect(startCoordinates.x, startCoordinates.y, width, height);
+      ctx.stroke();
+      ctx.closePath();
+    },
+
+    freeDraw: (e, render, ctx) => {
+      if (!render) return;
+
+      ctx.lineWidth = tools.lineWidth;
+      ctx.lineCap = 'round';
+      ctx.strokeStyle = 'black';
+
+      ctx.lineTo(e.clientX, e.clientY);
+      ctx.stroke();
+    },
+    erase: (e, render, ctx) => {
+      if (!render) return;
+
+      ctx.lineWidth = tools.lineWidth;
+      ctx.strokeStyle = '#fff';
+      ctx.lineCap = 'round';
+
+      ctx.lineTo(e.clientX, e.clientY);
+      ctx.stroke();
+      ctx.moveTo(e.clientX, e.clientY);
+      ctx.strokeStyle = 'black';
+    },
+
+    ellipse: (e, render, ctx, startCoordinates) => {
+      const { x, y } = startCoordinates;
+      const radiusX = Math.abs(e.clientX - startCoordinates.x);
+      const radiusY = Math.abs(e.clientY - startCoordinates.y);
+      ctx.lineWidth = tools.lineWidth;
+
+      ctx.beginPath();
+      if (render) tools.clearRendered(ctx);
+      ctx.ellipse(x, y, radiusX, radiusY, 0, 0, 2 * Math.PI);
+      ctx.stroke();
+      ctx.closePath();
+    },
+
+    clearRendered(ctx) {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.stroke();
+    }
+  };
 
   const setCurrentPosition = ({ clientX, clientY }) => {
     currentPosition.x = clientX;
@@ -118,17 +117,18 @@ window.onload = () => {
     eventFunc(e, painting, context, startCoordinates);
   };
 
+  //------ EVENT HANDLER FUNCTIONS------------
   const mouseDown = (e) => {
     getContext().beginPath();
     painting = true;
     startCoordinates.x = e.clientX;
     startCoordinates.y = e.clientY;
-    
-    if (eventFuncName === 'rectangle') {
+
+    if (eventFuncName !== 'draw' && eventFuncName !== 'eraser') {
       canvas.setAttribute('class', 'hide');
       tempCanvas.setAttribute('class', 'display');
     }
-    console.log(getContext())
+    console.log(getContext());
 
     renderEvent(e, getContext());
   };
@@ -137,18 +137,19 @@ window.onload = () => {
     let c;
     switch (eventFuncName) {
       case 'rectangle':
+      case 'ellipse':
         return contextTemp;
       case 'draw':
       case 'eraser':
         return context;
     }
-  }
+  };
 
   const mouseMove = (e) => {
-    renderEvent(e, getContext())
-  }
+    renderEvent(e, getContext());
+  };
 
-  const mouseUp = (e) => { 
+  const mouseUp = (e) => {
     painting = false;
     getContext().beginPath();
     paintPermanent(e);
@@ -158,16 +159,34 @@ window.onload = () => {
 
   /*
   -------------------------------------
+  --------- INITIALIZERS --------------
+  -------------------------------------
+  */
+
+  eventFunc = tools.drawRectangle;
+  eventFuncName = 'rectangle';
+
+  canvas.height = window.innerHeight * 0.85;
+  canvas.width = window.innerWidth * 0.85;
+
+  tempCanvas.height = window.innerHeight * 0.85;
+  tempCanvas.width = window.innerWidth * 0.85;
+
+  canvas.setAttribute('class', 'display');
+  tempCanvas.setAttribute('class', 'hide');
+
+  /*
+  -------------------------------------
   --------- EVENT LISTENERS -----------
   -------------------------------------
   */
 
   window.addEventListener('resize', () => {
-    canvas.height = window.innerHeight *.5;
-    canvas.width = window.innerWidth * .5;
+    canvas.height = document.querySelector("#App").style.height * .6;
+    canvas.width = document.querySelector("#App").style.width * .6;
 
-    tempCanvas.height = window.innerHeight *.5;
-    tempCanvas.width = window.innerWidth * .5;
+    tempCanvas.height = window.innerHeight * 0.5;
+    tempCanvas.width = window.innerWidth * 0.5;
   });
 
   tempCanvas.addEventListener('mousedown', mouseDown);
@@ -182,6 +201,11 @@ window.onload = () => {
   squareButton.addEventListener('click', () => {
     eventFunc = tools.drawRectangle;
     eventFuncName = 'rectangle';
+  });
+
+  ellipseButton.addEventListener('click', () => {
+    eventFunc = tools.ellipse;
+    eventFuncName = 'ellipse';
   });
 
   drawButton.addEventListener('click', () => {
