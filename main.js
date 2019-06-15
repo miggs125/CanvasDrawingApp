@@ -7,7 +7,7 @@ window.onload = () => {
 
   let painting = false;
 
-  const currentPosition = {
+  let currentPosition = {
     x: 0,
     y: 0
   };
@@ -120,28 +120,22 @@ window.onload = () => {
     }
   };
 
-  const setCurrentPosition = ({ clientX, clientY }) => {
-    currentPosition.x = clientX - canvas.getBoundingClientRect().x;
-    currentPosition.y = clientY - canvas.getBoundingClientRect().y;
-  };
-
   const renderEvent = (e, c) => {
     if (!painting) return;
-    setCurrentPosition(e);
+    currentPosition = getEventPosition(e);
     eventFunc(painting, c, startCoordinates);
   };
 
   const paintPermanent = (e) => {
-    setCurrentPosition(e);
+    // currentPosition = getEventPosition(e);
     eventFunc(painting, context, startCoordinates);
   };
 
   //------ EVENT HANDLER FUNCTIONS------------
-  const mouseDown = (e) => {
+  const eventStart = (e) => {
     getContext().beginPath();
     painting = true;
-    startCoordinates.x = e.clientX - canvas.getBoundingClientRect().x;
-    startCoordinates.y = e.clientY - canvas.getBoundingClientRect().y;
+    startCoordinates = getEventPosition(e);
     if (eventFuncName !== 'draw' && eventFuncName !== 'eraser') {
       tempCanvas.setAttribute('class', 'display');
     }
@@ -161,16 +155,31 @@ window.onload = () => {
     }
   };
 
-  const mouseMove = (e) => {
+  const eventMove = (e) => {
     renderEvent(e, getContext());
   };
 
-  const mouseUp = (e) => {
+  const eventEnd = (e) => {
+    console.log(e);
     painting = false;
     getContext().beginPath();
     paintPermanent(e);
     canvas.setAttribute('class', 'display');
     tempCanvas.setAttribute('class', 'hide');
+  };
+
+  const getEventPosition = (e) => {
+    const rect = canvas.getBoundingClientRect();
+    if (e.type.includes('mouse'))
+      return {
+        x: e.clientX - rect.left,
+        y: e.clientY - rect.top,
+      };
+      else if (e.type.includes('touch')) console.log(e);
+      return {
+        x: e.touches[0].clientX - rect.left,
+        y: e.touches[0].clientY - rect.top
+      }
   };
 
   /*
@@ -199,14 +208,14 @@ window.onload = () => {
     fitToParent(tempCanvas);
   });
 
-  tempCanvas.addEventListener('mousedown', mouseDown);
-  canvas.addEventListener('mousedown', mouseDown);
+  tempCanvas.addEventListener('mousedown touchstart ', eventStart);
+  canvas.addEventListener('mousedown touchstart', eventStart);  
 
-  canvas.addEventListener('mouseup', mouseUp);
-  tempCanvas.addEventListener('mouseup', mouseUp);
+  tempCanvas.addEventListener('mouseup touchend', eventEnd);
+  canvas.addEventListener('touchend touchcancel mouseup', eventEnd);
 
-  tempCanvas.addEventListener('mousemove', mouseMove);
-  canvas.addEventListener('mousemove', mouseMove);
+  tempCanvas.addEventListener('mousemove touchmove', eventMove);
+  canvas.addEventListener('mousemove touchmove', eventMove);
 
   squareButton.addEventListener('click', () => {
     eventFunc = tools.drawRectangle;

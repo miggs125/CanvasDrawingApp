@@ -47,12 +47,11 @@ header {
 
 .App {
     position: relative;
-    height: 95vh;
     width: 97vw;
     background:rgba(90, 142, 238, 0.363);
     padding: 1rem;
     border: solid rgb(25, 50, 97);
-    min-height: 500px;
+    min-height: 550px;
 }
 
 .icon {
