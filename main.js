@@ -160,7 +160,6 @@ window.onload = () => {
   };
 
   const eventEnd = (e) => {
-    console.log(e);
     painting = false;
     getContext().beginPath();
     paintPermanent(e);
@@ -175,7 +174,7 @@ window.onload = () => {
         x: e.clientX - rect.left,
         y: e.clientY - rect.top,
       };
-      else if (e.type.includes('touch')) console.log(e);
+      else if (e.type.includes('touch'))
       return {
         x: e.touches[0].clientX - rect.left,
         y: e.touches[0].clientY - rect.top
@@ -208,14 +207,21 @@ window.onload = () => {
     fitToParent(tempCanvas);
   });
 
-  tempCanvas.addEventListener('mousedown touchstart ', eventStart);
-  canvas.addEventListener('mousedown touchstart', eventStart);  
+  tempCanvas.addEventListener('mousedown', eventStart);
+  tempCanvas.addEventListener('touchstart', eventStart);
+  canvas.addEventListener('mousedown', eventStart);
+  canvas.addEventListener('touchstart', eventStart);
+  
 
-  tempCanvas.addEventListener('mouseup touchend', eventEnd);
-  canvas.addEventListener('touchend touchcancel mouseup', eventEnd);
+  tempCanvas.addEventListener('mouseup', eventEnd);
+  tempCanvas.addEventListener('touchend', eventEnd);
+  canvas.addEventListener('mouseup', eventEnd);
+  canvas.addEventListener('touchend touchcancel', eventEnd);
 
-  tempCanvas.addEventListener('mousemove touchmove', eventMove);
-  canvas.addEventListener('mousemove touchmove', eventMove);
+  tempCanvas.addEventListener('mousemove', eventMove);
+  tempCanvas.addEventListener('touchmove', eventMove);
+  canvas.addEventListener('mousemove', eventMove);
+  canvas.addEventListener('touchmove', eventMove);
 
   squareButton.addEventListener('click', () => {
     eventFunc = tools.drawRectangle;
@@ -256,4 +262,7 @@ window.onload = () => {
     eventFunc = tools.erase;
     eventFuncName = 'eraser';
   });
+
+  
 };
+
