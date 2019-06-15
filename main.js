@@ -33,6 +33,8 @@ window.onload = () => {
   const drawButton = document.querySelector('#draw');
   const eraserButton = document.querySelector('#eraser');
   const ellipseButton = document.querySelector('#ellipse');
+  const lineWidthButton = document.querySelector('#lineWidth');
+  const colourButton = document.querySelector('#lineColour');
 
   let eventFunc;
   let eventFuncName;
@@ -43,14 +45,14 @@ window.onload = () => {
   */
   const tools = {
     lineStyle: 10,
-    LineColour: 1,
-    fill: 1,
-    lineWidth: 14,
+    lineColour: 'black',
+    fill: false,
+    lineWidth: 2,
+    lineCap: 'round',
     drawRectangle: (e, render, ctx, startCoordinates) => {
       const width = e.clientX - startCoordinates.x;
       const height = e.clientY - startCoordinates.y;
-      ctx.lineWidth = tools.lineWidth;
-      ctx.lineCap = 'round';
+      tools.setStyle(ctx);
 
       ctx.beginPath();
       if (render) tools.clearRendered(ctx);
@@ -62,9 +64,7 @@ window.onload = () => {
     freeDraw: (e, render, ctx) => {
       if (!render) return;
 
-      ctx.lineWidth = tools.lineWidth;
-      ctx.lineCap = 'round';
-      ctx.strokeStyle = 'black';
+      tools.setStyle(ctx);
 
       ctx.lineTo(e.clientX, e.clientY);
       ctx.stroke();
@@ -79,14 +79,14 @@ window.onload = () => {
       ctx.lineTo(e.clientX, e.clientY);
       ctx.stroke();
       ctx.moveTo(e.clientX, e.clientY);
-      ctx.strokeStyle = 'black';
+      tools.setStyle(ctx);
     },
 
     ellipse: (e, render, ctx, startCoordinates) => {
       const { x, y } = startCoordinates;
       const radiusX = Math.abs(e.clientX - startCoordinates.x);
       const radiusY = Math.abs(e.clientY - startCoordinates.y);
-      ctx.lineWidth = tools.lineWidth;
+      tools.setStyle(ctx);
 
       ctx.beginPath();
       if (render) tools.clearRendered(ctx);
@@ -98,6 +98,11 @@ window.onload = () => {
     clearRendered(ctx) {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       ctx.stroke();
+    },
+    setStyle(ctx) {
+      ctx.lineCap = tools.lineCap;
+      ctx.strokeStyle = tools.lineColour;
+      ctx.lineWidth = tools.lineWidth;
     }
   };
 
@@ -119,6 +124,7 @@ window.onload = () => {
 
   //------ EVENT HANDLER FUNCTIONS------------
   const mouseDown = (e) => {
+    console.log(tools.lineWidth, typeof tools.lineWidth);
     getContext().beginPath();
     painting = true;
     startCoordinates.x = e.clientX;
@@ -182,8 +188,8 @@ window.onload = () => {
   */
 
   window.addEventListener('resize', () => {
-    canvas.height = document.querySelector("#App").style.height * .6;
-    canvas.width = document.querySelector("#App").style.width * .6;
+    canvas.height = document.querySelector('#App').style.height * 0.6;
+    canvas.width = document.querySelector('#App').style.width * 0.6;
 
     tempCanvas.height = window.innerHeight * 0.5;
     tempCanvas.width = window.innerWidth * 0.5;
@@ -201,6 +207,14 @@ window.onload = () => {
   squareButton.addEventListener('click', () => {
     eventFunc = tools.drawRectangle;
     eventFuncName = 'rectangle';
+  });
+
+  lineWidthButton.addEventListener('input', () => {
+    tools.lineWidth = Number.parseInt(lineWidthButton.value);
+  });
+
+  colourButton.addEventListener('input', () => {
+    tools.lineColour = colourButton.value;
   });
 
   ellipseButton.addEventListener('click', () => {
